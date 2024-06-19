@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
+  useChainId,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
@@ -11,6 +12,8 @@ import { ERC721Bridgeable } from "@/app/abis/ERC721Bridgeable";
 
 export const useBridge = () => {
   const [hash, setHash] = useState<Address>();
+
+  const chainId = useChainId();
   const { isPending, error, writeContract } = useWriteContract();
   const {
     isLoading: isConfirming,
@@ -24,7 +27,7 @@ export const useBridge = () => {
       "bridge"
     >,
   ) => writeContract({
-    address: HELLO_ERC721_ADDRESS,
+    address: HELLO_ERC721_ADDRESS[chainId],
     abi: ERC721Bridgeable,
     functionName: "bridge",
     args,

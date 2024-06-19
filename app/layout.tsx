@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
 import CssBaseline from "@mui/material/CssBaseline";
+import ThemeCustomization from "@/app/theme/ThemeCustomization";
+import Layout from "@/app/layout/Layout";
 import Providers from "./providers";
 import "./globals.css";
 
@@ -22,8 +24,12 @@ export default function RootLayout({
     <body className={inter.className}>
     <Providers>
       <AppRouterCacheProvider>
-        {children}
-        <CssBaseline/>
+        <ThemeCustomization>
+          <Layout>
+            {children}
+          </Layout>
+          <CssBaseline/>
+        </ThemeCustomization>
       </AppRouterCacheProvider>
     </Providers>
     </body>

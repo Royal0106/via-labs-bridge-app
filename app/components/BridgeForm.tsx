@@ -2,17 +2,20 @@
 
 import { useEffect, useState } from "react";
 import {
+  Paper,
   Stack,
+  Grid,
   Button,
   FormControl,
   InputLabel,
   Select,
   SelectChangeEvent,
   MenuItem,
-  TextField,
   Alert,
+  IconButton,
 } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
+import SwapVertIcon from "@mui/icons-material/SwapVert";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -23,7 +26,10 @@ import {
   useSwitchChain,
   type BaseError,
 } from "wagmi";
+import { HELLO_ERC721_ADDRESS } from "@/app/config/constants";
 import { useBridge } from "@/app/hooks/erc721bridgeable";
+
+import NFTSelect from "./NFTSelect";
 
 type FormData = {
   destination: string
@@ -82,108 +88,120 @@ export default function BridgeForm() {
   };
 
   useEffect(() => {
+    setValue("nftId", "");
     setValue("destination", "");
   }, [chainId, setValue]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={4}>
-        <FormControl
-          fullWidth
-          disabled={isSwitchingChain}
-        >
-          <InputLabel>Source Network</InputLabel>
-          <Select
-            label="Source Network"
-            value={chainId}
-            onChange={onSourceNetworkChange}
-          >
-            {chains.map((chain => (
-              <MenuItem
-                key={chain.id}
-                value={chain.id}
-              >
-                {chain.name}
-              </MenuItem>
-            )))}
-          </Select>
-        </FormControl>
-        <FormControl fullWidth error={!!errors.destination}>
-          <InputLabel>Destination Network</InputLabel>
-          <Controller
-            control={control}
-            render={({ field }) => (
+    <Paper elevation={0} sx={{ p: { xs: 2, md: 3 } }}>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Grid container spacing={8}>
+          <Grid item xs={12} sm={5}>
+            <FormControl fullWidth sx={{ mb: 8 }}>
+              <InputLabel>Collection</InputLabel>
               <Select
-                label="Destination Network"
-                {...field}
+                value="H721"
+                label="Collection"
+                disabled
               >
-                {chains.map((chain => (
-                  <MenuItem
-                    key={chain.id}
-                    value={chain.id}
-                    disabled={chain.id === chainId}
-                  >
-                    {chain.name}
-                  </MenuItem>
-                )))}
+                <MenuItem value={"H721"}>H721</MenuItem>
               </Select>
-            )}
-            name={"destination"}
-          />
-        </FormControl>
-      </Stack>
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={2}>
-        <FormControl fullWidth>
-          <InputLabel>Collection</InputLabel>
-          <Select
-            value="H721"
-            label="Collection"
-            disabled
-          >
-            <MenuItem value={"H721"}>H721</MenuItem>
-          </Select>
-        </FormControl>
-        <Controller
-          control={control}
-          render={({ field }) => (
-            <TextField
-              label="NFT ID"
-              variant="outlined"
-              fullWidth
-              {...field}
-              error={!!errors.nftId}
+            </FormControl>
+
+            <Stack>
+              <FormControl
+                fullWidth
+                disabled={isSwitchingChain}
+              >
+                <InputLabel>Source Network</InputLabel>
+                <Select
+                  label="Source Network"
+                  value={chainId}
+                  onChange={onSourceNetworkChange}
+                >
+                  {chains.map((chain => (
+                    <MenuItem
+                      key={chain.id}
+                      value={chain.id}
+                    >
+                      {chain.name}
+                    </MenuItem>
+                  )))}
+                </Select>
+              </FormControl>
+              <Stack alignItems={"center"} my={1}>
+                <IconButton color={"primary"}>
+                  <SwapVertIcon/>
+                </IconButton>
+              </Stack>
+              <FormControl fullWidth error={!!errors.destination}>
+                <InputLabel>Destination Network</InputLabel>
+                <Controller
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      label="Destination Network"
+                      {...field}
+                    >
+                      {chains.map((chain => (
+                        <MenuItem
+                          key={chain.id}
+                          value={chain.id}
+                          disabled={chain.id === chainId}
+                        >
+                          {chain.name}
+                        </MenuItem>
+                      )))}
+                    </Select>
+                  )}
+                  name={"destination"}
+                />
+              </FormControl>
+            </Stack>
+          </Grid>
+          <Grid item xs={12} sm={7}>
+            <Controller
+              control={control}
+              render={({ field }) => (
+                <NFTSelect
+                  nftAddress={HELLO_ERC721_ADDRESS[chainId]}
+                  {...field}
+                  error={!!errors.nftId}
+                />
+              )}
+              name={"nftId"}
             />
-          )}
-          name={"nftId"}
-        />
-      </Stack>
-      <Stack mb={2}>
-        {isConnected ? (
-          <LoadingButton
-            variant="contained"
-            size="large"
-            type="submit"
-            loading={isLoading}
-          >
-            <span>Bridge</span>
-          </LoadingButton>
-        ) : (
-          <Button
-            variant="outlined"
-            size="large"
-            onClick={onWalletConnect}
-          >
-            Connect Wallet
-          </Button>
-        )}
-      </Stack>
-      <Stack mb={2}>
-        {error && (
-          <Alert severity="error">
-            {(error as BaseError).shortMessage || error.message}
-          </Alert>
-        )}
-      </Stack>
-    </form>
-  );
+            <Stack>
+              {isConnected ? (
+                <LoadingButton
+                  variant="contained"
+                  size="large"
+                  type="submit"
+                  loading={isLoading}
+                >
+                  <span>Bridge</span>
+                </LoadingButton>
+              ) : (
+                <Button
+                  variant="outlined"
+                  size="large"
+                  onClick={onWalletConnect}
+                >
+                  Connect Wallet
+                </Button>
+              )}
+            </Stack>
+            <Stack>
+              {error && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  {(error as BaseError).shortMessage || error.message}
+                </Alert>
+              )}
+            </Stack>
+          </Grid>
+        </Grid>
+      </form>
+    </Paper>
+  )
+    ;
 }
